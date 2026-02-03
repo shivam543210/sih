@@ -212,3 +212,50 @@ class DNATransformerService:
             "k_mer_size": self.K,
             "max_sequence_length": self.MAXLEN
         }
+
+    def evaluate_accuracy(self, test_sequences: List[str], true_labels: List[str]) -> Dict:
+        """
+        Evaluate model accuracy on test sequences
+        Args:
+            test_sequences: List of DNA sequences
+            true_labels: List of true species labels for the sequences
+        Returns:
+            Dictionary containing accuracy metrics
+        """
+        if len(test_sequences) != len(true_labels):
+            raise ValueError("Number of sequences and labels must match")
+        
+        total = len(test_sequences)
+        correct = 0
+        predictions = []
+        true_species_indices = [self.species_to_idx.get(label) for label in true_labels]
+        
+        for seq, true_label in zip(test_sequences, true_labels):
+            try:
+                result = self.predict(seq)
+                predicted_species = result["species"]
+                predictions.append(result)
+                
+                if predicted_species == true_label:
+                    correct += 1
+                    
+            except Exception as e:
+                logger.error(f"Error processing sequence: {str(e)}")
+                predictions.append({
+                    "error": str(e),
+                    "species": None,
+                    "confidence": 0.0
+                })
+        
+        accuracy = correct / total if total > 0 else 0
+        
+        return {
+            "accuracy": accuracy,
+            "total_sequences": total,
+            "correct_predictions": correct,
+            "predictions": predictions,
+            "evaluation_summary": {
+                "accuracy_percentage": f"{accuracy * 100:.2f}%",
+                "total_errors": total - correct
+            }
+        }

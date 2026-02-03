@@ -7,7 +7,8 @@ import logging
 from .model_service import DNATransformerService
 from .schemas import (
     DNASequenceRequest, BatchRequest, PredictionResponse, 
-    BatchResponse, HealthResponse, ErrorResponse
+    BatchResponse, HealthResponse, ErrorResponse,
+    AccuracyTestRequest, AccuracyTestResponse
 )
 
 # Configure logging
@@ -171,6 +172,25 @@ async def get_model_info():
         raise HTTPException(status_code=503, detail="Model service not available")
     
     return model_service.health_check()
+
+@app.post("/model/test-accuracy", response_model=AccuracyTestResponse, tags=["Model"])
+async def test_model_accuracy(request: AccuracyTestRequest):
+    """Test model accuracy with provided sequences and true labels"""
+    if not model_service:
+        raise HTTPException(status_code=503, detail="Model service not available")
+    
+    try:
+        result = model_service.evaluate_accuracy(
+            test_sequences=request.sequences,
+            true_labels=request.true_labels
+        )
+        return AccuracyTestResponse(**result)
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Accuracy testing error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during accuracy testing")
 
 # FIXED: Exception handlers now return JSONResponse objects
 @app.exception_handler(404)

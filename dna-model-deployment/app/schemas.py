@@ -32,3 +32,14 @@ class HealthResponse(BaseModel):
 class ErrorResponse(BaseModel):
     error: str
     detail: str
+
+class AccuracyTestRequest(BaseModel):
+    sequences: List[str] = Field(..., description="List of DNA sequences for testing")
+    true_labels: List[str] = Field(..., description="List of true species labels")
+
+class AccuracyTestResponse(BaseModel):
+    accuracy: float = Field(..., ge=0.0, le=1.0)
+    total_sequences: int
+    correct_predictions: int
+    predictions: List[Dict]
+    evaluation_summary: Dict

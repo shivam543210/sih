@@ -1,7 +1,9 @@
 {
   "classes": [
     "Bathycoccus_prasinos",
+    "Chlamydomonas_reinhardtii",
     "Cyanidioschyzon_merolae",
+    "Emiliania_huxleyi",
     "Ostreococcus_lucimarinus",
     "Thalassiosira_pseudonana"
   ]
